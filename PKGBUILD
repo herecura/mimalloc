@@ -12,19 +12,25 @@ depends=('glibc')
 makedepends=('cmake' 'git')
 provides=('mimalloc')
 options=('staticlibs')
-source=("${pkgname}_${pkgver}::git+https://github.com/microsoft/${pkgname}.git#tag=v${pkgver}")
+source=("${pkgname}::git+https://github.com/microsoft/${pkgname}.git#tag=v${pkgver}")
 sha256sums=('SKIP')
 
 build() {
-  cd "${pkgname}_${pkgver}"
-  cmake -DCMAKE_INSTALL_PREFIX=/usr .
+  cd "${pkgname}"
+  cmake \
+    -DCMAKE_INSTALL_PREFIX=/usr .
   make
 }
 
 package() {
-  cd "${pkgname}_${pkgver}"
-  make DESTDIR="$pkgdir" install
-  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  cd "${pkgname}"
+  make DESTDIR="${pkgdir}" install
 
-  ln -s "mimalloc-1.6/libmimalloc.so.1.6" "${pkgdir}/usr/lib/"
+  #ln -s "mimalloc-1.6/libmimalloc.so.1.6" "${pkgdir}/usr/lib/"
+  (
+    cd "${pkgdir}/usr/lib"
+    find -iname "libmimalloc*so*" -exec ln -s {} \;
+  )
+
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }
